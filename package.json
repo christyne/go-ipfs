@@ -280,6 +280,13 @@
       "hash": "QmQKEgGgYCDyk8VNY6A65FpuE4YwbspvjXHco1rdb75PVc",
       "name": "go-libp2p-routing",
       "version": "2.2.2"
+    },
+    {
+      "author": "lgierth",
+      "hash": "QmQfeKxQtBN721pekQh6Jq24adFUjnU65YdY3GNczfuG2T",
+      "name": "dir-index-html",
+      "version": "1.0.3",
+      "comment": "This one needs code updates in assets/assets.go too."
     }
   ],
   "gxVersion": "0.4.0",
