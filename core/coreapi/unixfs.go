@@ -2,11 +2,15 @@ package coreapi
 
 import (
 	"context"
+	"io"
 
 	core "github.com/ipfs/go-ipfs/core"
 	coreiface "github.com/ipfs/go-ipfs/core/coreapi/interface"
+	coreunix "github.com/ipfs/go-ipfs/core/coreunix"
 	mdag "github.com/ipfs/go-ipfs/merkledag"
 	uio "github.com/ipfs/go-ipfs/unixfs/io"
+
+	cid "gx/ipfs/QmXfiyr2RWEXpVDdaYnD2HNiBk6UBddsvEP4RPfXb6nGqY/go-cid"
 )
 
 type UnixfsAPI struct {
@@ -16,6 +20,14 @@ type UnixfsAPI struct {
 func NewUnixfsAPI(n *core.IpfsNode) coreiface.UnixfsAPI {
 	api := &UnixfsAPI{n}
 	return api
+}
+
+func (api *UnixfsAPI) Add(ctx context.Context, r io.Reader) (*cid.Cid, error) {
+	k, err := coreunix.AddWithContext(ctx, api.node, r)
+	if err != nil {
+		return nil, err
+	}
+	return cid.Decode(k)
 }
 
 func (api *UnixfsAPI) Cat(ctx context.Context, p string) (coreiface.Reader, error) {
