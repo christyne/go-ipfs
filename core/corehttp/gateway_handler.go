@@ -60,6 +60,20 @@ func (i *gatewayHandler) newDagFromReader(r io.Reader) (node.Node, error) {
 
 // TODO(btc): break this apart into separate handlers using a more expressive muxer
 func (i *gatewayHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	ctx, cancel := context.WithTimeout(i.node.Context(), time.Hour)
+	// the hour is a hard fallback, we don't expect it to happen, but just in case
+	defer cancel()
+
+	if cn, ok := w.(http.CloseNotifier); ok {
+		clientGone := cn.CloseNotify()
+		go func() {
+			select {
+			case <-clientGone:
+			case <-ctx.Done():
+			}
+		}()
+	}
+
 	defer func() {
 		if r := recover(); r != nil {
 			log.Error("A panic occurred in the gateway handler!")
@@ -83,7 +97,7 @@ func (i *gatewayHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if r.Method == "GET" || r.Method == "HEAD" {
-		i.getOrHeadHandler(w, r)
+		i.getOrHeadHandler(ctx, w, r)
 		return
 	}
 
@@ -113,20 +127,7 @@ func (i *gatewayHandler) optionsHandler(w http.ResponseWriter, r *http.Request) 
 	i.addUserHeaders(w) // return all custom headers (including CORS ones, if set)
 }
 
-func (i *gatewayHandler) getOrHeadHandler(w http.ResponseWriter, r *http.Request) {
-	ctx, cancel := context.WithTimeout(i.node.Context(), time.Hour)
-	// the hour is a hard fallback, we don't expect it to happen, but just in case
-	defer cancel()
-
-	if cn, ok := w.(http.CloseNotifier); ok {
-		clientGone := cn.CloseNotify()
-		go func() {
-			select {
-			case <-clientGone:
-			case <-ctx.Done():
-			}
-		}()
-	}
+func (i *gatewayHandler) getOrHeadHandler(ctx context.Context, w http.ResponseWriter, r *http.Request) {
 
 	urlPath := r.URL.Path
 
