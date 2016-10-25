@@ -134,7 +134,7 @@ func (d *Directory) cacheNode(name string, nd *dag.Node) (FSNode, error) {
 	}
 
 	switch i.GetType() {
-	case ufspb.Data_Directory:
+	case ufspb.Data_Directory, ufspb.Data_HAMTShard:
 		ndir, err := NewDirectory(d.ctx, name, nd, d, d.dserv)
 		if err != nil {
 			return nil, err
